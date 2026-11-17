@@ -1,0 +1,733 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AnyTeam · Northwind Beverages deal room</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Colours, type and radii come from the AnyTeam design tokens (anyteam-dot-com src/v4/site/tokens.css, dark register). */
+:root{
+  --black:#111111; --white:#ffffff;
+  --grey-200:#e5e5e5; --grey-300:#cacacb; --grey-400:#9e9ea0; --grey-500:#707072;
+  --grey-600:#4b4b4d; --grey-700:#39393b; --grey-800:#28282a; --grey-900:#1f1f21;
+  --success:#1eaa52;
+  --bg:var(--black); --bg-2:var(--grey-900); --bg-3:var(--grey-800); --hover:var(--grey-700);
+  --text:var(--white); --text-2:var(--grey-400);
+  --line:var(--grey-800); --line-2:var(--grey-700);
+  --font:"Instrument Sans","Helvetica Neue",Helvetica,Arial,sans-serif;
+  --r-card:16px; --r-pill:30px;
+  --ease:cubic-bezier(.22,1,.36,1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--text);font:400 14px/21px var(--font);-webkit-font-smoothing:antialiased;overflow:hidden}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+button:focus-visible{outline:2px solid var(--white);outline-offset:2px}
+svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.screen{position:fixed;inset:0;display:none}
+.screen.on{display:flex}
+
+/* ---------- shared bits ---------- */
+.btn{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 16px;border-radius:var(--r-pill);font-weight:500;white-space:nowrap;transition:background .15s,color .15s,border-color .15s}
+.btn svg{width:16px;height:16px}
+.btn-primary{background:var(--white);color:var(--black)}
+.btn-primary:hover{background:var(--grey-200)}
+.btn-ghost{border:1.5px solid var(--line-2);color:var(--text)}
+.btn-ghost:hover{background:var(--hover)}
+.btn-l{height:52px;padding:0 28px;font-size:16px}
+.btn[disabled]{opacity:.35;cursor:default}
+.tag{display:inline-flex;align-items:center;height:18px;padding:0 7px;border-radius:9px;border:1px solid var(--line-2);color:var(--text-2);font:500 10px/1 var(--font);letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}
+.av{position:relative;width:32px;height:32px;border-radius:50%;background:var(--grey-700);display:grid;place-items:center;font-weight:600;font-size:13px;flex:none;transition:opacity .6s,filter .6s}
+.av .live{position:absolute;right:-1px;bottom:-1px;width:10px;height:10px;border-radius:50%;background:var(--success);border:2px solid var(--bg)}
+.av.gone{opacity:.3;filter:grayscale(1)}
+.av.gone .live{display:none}
+.lbl{font:500 12px/18px var(--font);letter-spacing:.06em;text-transform:uppercase;color:var(--text-2)}
+
+/* ---------- screen 1: opening ---------- */
+#s1{flex-direction:column;align-items:center;justify-content:center;gap:40px;padding:32px}
+.halves{display:grid;grid-template-columns:1fr 1fr;gap:24px;width:min(1120px,100%)}
+.half{background:var(--bg-2);border-radius:24px;padding:28px 28px 32px;display:flex;flex-direction:column;gap:20px;min-height:420px}
+.half h2{font:500 32px/1.2 var(--font)}
+.half .cap{font:500 20px/1.3 var(--font);color:var(--text-2)}
+.scatter{position:relative;flex:1;min-height:250px}
+.bub{position:absolute;display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:14px 14px 14px 4px;background:var(--bg-3);color:var(--text-2);font-size:13px;white-space:nowrap}
+.bub svg{width:12px;height:12px}
+.room{flex:1;display:grid;place-items:center}
+.roomcard{width:min(360px,100%);background:var(--bg-3);border-radius:var(--r-card);padding:22px;display:flex;flex-direction:column;gap:16px}
+.roomcard .t{font:500 18px/1.3 var(--font)}
+.roomcard .s{color:var(--text-2);font-size:13px;margin-top:2px}
+.row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.aicon{width:32px;height:32px;border-radius:10px;background:var(--grey-900);display:grid;place-items:center;color:var(--text)}
+.aicon svg{width:16px;height:16px}
+
+/* ---------- screen 2: deal room ---------- */
+#s2{flex-direction:column}
+.top{display:flex;align-items:center;gap:20px;padding:14px 24px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.brand{width:28px;height:28px;flex:none}
+.deal{display:flex;flex-direction:column;min-width:0}
+.deal .k{display:flex;align-items:center;gap:8px}
+.deal h1{font:500 20px/1.2 var(--font);white-space:nowrap}
+.team{display:flex;align-items:center;gap:6px}
+.team .av{animation:none}
+.team .av.enter{animation:slideIn .7s var(--ease)}
+@keyframes slideIn{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:none}}
+.ctrls{margin-left:auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.days{display:inline-flex;background:var(--bg-2);border-radius:var(--r-pill);padding:3px}
+.days button{height:30px;padding:0 12px;border-radius:var(--r-pill);color:var(--text-2);font-weight:500}
+.days button:hover{color:var(--text)}
+.days button.on{background:var(--white);color:var(--black)}
+
+.cos{display:flex;align-items:stretch;gap:16px;padding:14px 24px;border-bottom:1px solid var(--line)}
+.cos .who{display:flex;align-items:center;gap:10px;min-width:200px}
+.cos .who b{font-weight:500;display:block}
+.cos .who span{color:var(--text-2);font-size:13px}
+.things{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;flex:1;transition:opacity .35s}
+.things.swap{opacity:0}
+.thing{background:var(--bg-2);border-radius:12px;padding:10px 14px;display:flex;gap:12px}
+.thing .n{color:var(--text-2);font-weight:500}
+.thing p{font-size:14px;line-height:20px}
+.thing small{display:block;color:var(--text-2);font-size:12px;margin-top:2px}
+
+.cols{flex:1;display:grid;grid-template-columns:270px 1fr 330px;min-height:0}
+.col{display:flex;flex-direction:column;min-height:0;padding:18px 20px 0}
+.col+.col{border-left:1px solid var(--line)}
+.col .head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.scroll{overflow-y:auto;flex:1;padding-bottom:18px;scrollbar-width:thin;scrollbar-color:var(--grey-700) transparent}
+
+/* agent bench */
+.bench{display:flex;flex-direction:column;gap:6px}
+.agent{position:relative;display:flex;align-items:center;gap:12px;padding:10px;border-radius:12px;cursor:default;transition:background .15s}
+.agent:hover,.agent.focus{background:var(--bg-2)}
+.agent.active{background:var(--bg-2);box-shadow:inset 0 0 0 1.5px var(--line-2)}
+.agent .nm{font-weight:500;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.agent .ow{color:var(--text-2);font-size:13px;display:flex;align-items:center;gap:6px}
+.tip{position:fixed;z-index:30;width:300px;background:var(--bg-3);border-radius:12px;padding:14px 16px;box-shadow:0 4px 8px rgba(0,0,0,.5),0 0 24px 4px rgba(0,0,0,.35);pointer-events:none;opacity:0;transform:translateY(4px);transition:opacity .15s,transform .15s}
+.tip.on{opacity:1;transform:none}
+.tip .tt{font-weight:500;margin-bottom:8px}
+.tip dl{display:grid;grid-template-columns:44px 1fr;gap:6px 8px;font-size:13px;line-height:19px}
+.tip dt{color:var(--text-2);font-weight:500;font-size:12px;letter-spacing:.06em}
+
+/* feed */
+.feed{display:flex;flex-direction:column;gap:12px}
+.empty{color:var(--text-2);padding:28px 4px;text-align:center}
+.card{background:var(--bg-2);border-radius:var(--r-card);padding:16px 18px;display:flex;flex-direction:column;gap:10px;transition:opacity .5s}
+.card.in{animation:cardIn .7s var(--ease)}
+@keyframes cardIn{from{opacity:0;transform:translateY(-14px)}to{opacity:1;transform:none}}
+.card.skipped{opacity:.4}
+.card .ch{display:flex;align-items:center;gap:10px}
+.card .ch .aicon{width:28px;height:28px;border-radius:8px;background:var(--bg-3)}
+.card .ch b{font-weight:500}
+.card .ch time{margin-left:auto;color:var(--text-2);font-size:12px}
+.card .noticed{font:500 17px/24px var(--font)}
+.chip{align-self:flex-start;display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 10px;border-radius:13px;background:var(--bg-3);color:var(--text-2);font-size:12px}
+.chip svg{width:13px;height:13px}
+.draft{background:var(--bg);border-radius:12px;padding:10px 14px}
+.draft .lbl{font-size:11px}
+.draft p{margin-top:2px}
+.brief{list-style:none;display:flex;flex-direction:column;gap:6px;margin-top:6px}
+.brief li{display:flex;gap:10px;font-size:14px;line-height:20px}
+.brief li .n{color:var(--text-2);width:12px;flex:none}
+.brief li small{color:var(--text-2);font-size:12px;display:block}
+.card .cf{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.card .cf .btn{height:32px;padding:0 14px}
+.card .cf .btn.press{background:var(--grey-200);transform:scale(.96)}
+.acted{color:var(--text-2);font-size:13px;display:inline-flex;align-items:center;gap:6px}
+.acted svg{width:14px;height:14px;color:var(--success)}
+.acted.done{color:var(--text)}
+.acted.done+.acted{margin-left:4px}
+.comment{color:var(--text-2);font-size:13px}
+.comment b{color:var(--text);font-weight:500}
+
+/* memory */
+.facts{list-style:none;display:flex;flex-direction:column;gap:8px}
+.fact{display:flex;gap:10px;background:var(--bg-2);border-radius:12px;padding:10px 12px}
+.fact svg{width:16px;height:16px;color:var(--success);margin-top:2px}
+.fact p{font-weight:500}
+.fact small{display:block;color:var(--text-2);font-size:12px}
+.fact.hold{visibility:hidden}
+.fly{position:fixed;z-index:40;pointer-events:none;background:var(--bg-3);border-radius:12px;padding:10px 12px;font-weight:500;box-shadow:0 4px 8px rgba(0,0,0,.5)}
+
+/* log */
+.log{display:flex;align-items:center;gap:14px;height:44px;padding:0 24px;border-top:1px solid var(--line);overflow:hidden;white-space:nowrap;font-size:13px;color:var(--text-2)}
+.log .lbl{font-size:11px;flex:none}
+.log ol{list-style:none;display:flex;gap:24px;overflow:hidden}
+.log li b{color:var(--text);font-weight:500}
+.log li time{margin-right:6px}
+
+/* banner + closing overlay */
+.banner{position:fixed;left:50%;top:14px;z-index:35;transform:translate(-50%,-140%);transition:transform .7s var(--ease),visibility .7s;background:var(--white);color:var(--black);border-radius:var(--r-pill);padding:10px 20px;font:500 16px/24px var(--font);display:flex;align-items:center;gap:10px;box-shadow:0 4px 8px rgba(0,0,0,.5)}
+.banner .tag{border-color:var(--grey-300);color:var(--grey-500)}
+.banner{visibility:hidden}
+.banner.on{transform:translate(-50%,0);visibility:visible}
+#s3{z-index:50;background:var(--bg);flex-direction:column;align-items:center;justify-content:center;gap:28px;padding:32px;text-align:center;opacity:0;transition:opacity .6s}
+#s3.show{opacity:1}
+#s3 h2{font:500 76px/1.1 var(--font);max-width:1100px;letter-spacing:-.01em}
+#s3 .ask{font:400 22px/1.4 var(--font);color:var(--text-2);transition:opacity .6s}
+#s3 .row{justify-content:center;transition:opacity .6s}
+#s3 .later{opacity:0}
+#s3.full .later{opacity:1}
+
+/* ---------- phone ---------- */
+@media (max-width:960px){
+  body{overflow:auto}
+  .screen{position:static;min-height:100%}
+  #s2.on{display:flex}
+  .halves{grid-template-columns:1fr}
+  .half{min-height:300px}
+  .cols{grid-template-columns:1fr}
+  .col+.col{border-left:0;border-top:1px solid var(--line)}
+  .scroll{overflow:visible}
+  .things{grid-template-columns:1fr}
+  .cos{flex-direction:column}
+  .ctrls{margin-left:0}
+  .deal h1{white-space:normal;font-size:18px}
+  .log{height:auto;padding:12px 24px;white-space:normal;align-items:flex-start}
+  .log ol{flex-direction:column;gap:4px}
+  #s3{position:fixed}
+  #s3 h2{font-size:44px}
+  .tip{display:none}
+  .cols>.col:nth-child(2){order:-2}
+  .cols>.col:nth-child(3){order:-1}
+}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+
+<!-- SCREEN 1: OPENING -->
+<section class="screen on" id="s1" aria-label="Opening">
+  <div class="halves">
+    <div class="half">
+      <h2>Today</h2>
+      <div class="scatter" id="scatter" aria-hidden="true"></div>
+      <p class="cap">1,000 private threads.</p>
+    </div>
+    <div class="half">
+      <h2>AnyTeam</h2>
+      <div class="room">
+        <div class="roomcard">
+          <div><div class="t">Northwind Beverages</div><div class="s">$400K renewal · March 15</div></div>
+          <div class="row" id="s1team"></div>
+          <div class="row" id="s1agents"></div>
+        </div>
+      </div>
+      <p class="cap">One room per deal.</p>
+    </div>
+  </div>
+  <button class="btn btn-primary btn-l" id="enter">Enter the deal room</button>
+</section>
+
+<!-- SCREEN 2: DEAL ROOM -->
+<section class="screen" id="s2" aria-label="Deal room">
+  <header class="top">
+    <svg class="brand" viewBox="70 70 360 360" aria-label="AnyTeam"><path fill="#fff" stroke="none" fill-rule="evenodd" d="M250 109C328.424 109 392 172.128 392 250C392 250.11 391.998 250.22 391.998 250.33L392 250.325V382.208C361.242 377.42 343.916 355.933 343.834 355.832L343.836 355.825C318.815 377.717 285.971 391 250 391C171.576 391 108 327.872 108 250C108 172.128 171.576 109 250 109ZM250 175.43C208.524 175.43 174.901 208.816 174.901 250C174.901 291.184 208.524 324.571 250 324.571C291.476 324.571 325.1 291.184 325.1 250C325.1 208.816 291.476 175.43 250 175.43Z"/></svg>
+    <div class="deal">
+      <div class="k"><h1>Northwind Beverages · $400K renewal · March 15</h1><span class="tag" title="The shared deal room is on the roadmap">Roadmap</span></div>
+    </div>
+    <div class="team" id="team" aria-label="In the room"></div>
+    <div class="ctrls">
+      <button class="btn btn-primary" id="play"><svg viewBox="0 0 24 24"><path d="M7 5l12 7-12 7z" fill="currentColor"/></svg>Play the week</button>
+      <button class="btn btn-ghost" id="pause" disabled><svg viewBox="0 0 24 24"><path d="M8 5v14M16 5v14"/></svg>Pause</button>
+      <button class="btn btn-ghost" id="next"><svg viewBox="0 0 24 24"><path d="M6 5l9 7-9 7zM18 5v14"/></svg>Next</button>
+      <div class="days" id="days" role="group" aria-label="Pick a day"></div>
+      <button class="btn btn-ghost" id="aeleaves">AE leaves</button>
+    </div>
+  </header>
+
+  <div class="cos" aria-live="polite">
+    <div class="who"><div class="aicon" data-icon="cos"></div><div><b>Chief of Staff</b><span>3 things to know today</span></div></div>
+    <div class="things" id="things"></div>
+  </div>
+
+  <div class="cols">
+    <aside class="col">
+      <div class="head"><span class="lbl">Agent bench</span></div>
+      <div class="scroll"><div class="bench" id="bench"></div></div>
+    </aside>
+    <main class="col">
+      <div class="head"><span class="lbl">Live deal feed</span></div>
+      <div class="scroll"><div class="feed" id="feed"></div></div>
+    </main>
+    <aside class="col">
+      <div class="head"><span class="lbl">What this deal knows</span></div>
+      <div class="scroll"><ol class="facts" id="facts"></ol><p class="empty" id="factsEmpty">Approved facts land here.</p></div>
+    </aside>
+  </div>
+
+  <footer class="log"><span class="lbl">Activity</span><ol id="log"></ol></footer>
+</section>
+
+<div class="banner" id="banner" role="status">Maya moves to a new territory. <span class="tag">Roadmap</span></div>
+<div class="tip" id="tip" role="tooltip"></div>
+
+<!-- SCREEN 3: CLOSE -->
+<section class="screen" id="s3" aria-label="Close">
+  <h2>Reps leave. The deal’s memory doesn’t.</h2>
+  <p class="ask later">Which of these agents would you turn on first?</p>
+  <div class="row later">
+    <button class="btn btn-ghost btn-l" id="back">Back to the deal room</button>
+    <button class="btn btn-primary btn-l" id="replay">Replay</button>
+  </div>
+</section>
+
+<script>
+(() => {
+const $ = s => document.querySelector(s);
+const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
+const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+const ICONS = {
+  cos: '<path d="M12 3l2.2 4.6 5 .7-3.6 3.5.9 5-4.5-2.4-4.5 2.4.9-5L4.8 8.3l5-.7z"/>',
+  recap: '<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/>',
+  map: '<circle cx="12" cy="6" r="2.5"/><circle cx="5.5" cy="18" r="2.5"/><circle cx="18.5" cy="18" r="2.5"/><path d="M12 8.5v3M12 11.5l-5 4.5M12 11.5l5 4.5"/>',
+  health: '<path d="M3 12h4l2-5 4 10 2-5h6"/>',
+  coach: '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
+  research: '<circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/>',
+  lock: '<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
+  check: '<path d="M5 12.5l4.5 4.5L19 7"/>',
+  Call: '<path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/>',
+  Email: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>',
+  LinkedIn: '<rect x="3" y="3" width="18" height="18" rx="3"/><path d="M8 10v7M8 7v.01M12 17v-7M12 13a3 3 0 0 1 6 0v4"/>',
+  CRM: '<ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/>'
+};
+const svg = k => `<svg viewBox="0 0 24 24">${ICONS[k]}</svg>`;
+
+const PEOPLE = { Maya:'AE', Sam:'SE', Priya:'CSM', Jordan:'CRO', Leo:'AE' };
+
+const AGENTS = [
+  { id:'cos', name:'Chief of Staff', owner:'Everyone',
+    in:'Everything in this room: calls, email, CRM and every approval.',
+    why:'Picks the 3 things that change what the team does today.',
+    out:'“3 things to know today,” each with its source.' },
+  { id:'recap', name:'Meeting Recap', owner:'Maya',
+    in:'The call with Dana on Monday.',
+    why:'Dana asked for a discount and named a new approver.',
+    out:'A follow-up email to Dana, ready for Maya to approve.' },
+  { id:'map', name:'Stakeholder Map', owner:'Jordan',
+    in:'LinkedIn profiles and everyone on our threads.',
+    why:'A new CFO nobody has met can stall a renewal.',
+    out:'A short intro note from Jordan to Alex.' },
+  { id:'health', name:'Account Health', owner:'Priya', roadmap:true,
+    in:'Support emails from Northwind.',
+    why:'Two reporting complaints in one month put a renewal at risk.',
+    out:'A check-in from Priya offering a reporting session.' },
+  { id:'coach', name:'Deal Coach', owner:'Sam and Maya', roadmap:true,
+    in:'CRM activity and email history.',
+    why:'Deals with one engaged contact are the ones that slip.',
+    out:'A meeting plan with Dana, Alex and the ops lead.' },
+  { id:'research', name:'Account Research', owner:'Everyone',
+    in:'Northwind’s news and its people’s LinkedIn profiles.',
+    why:'Keeps the whole team current on the account.',
+    out:'A short account brief before each meeting.' }
+];
+const agentById = id => AGENTS.find(a => a.id === id);
+
+const START_THINGS = [
+  ['Renewal is March 15, $400K.', 'CRM'],
+  ['Dana Lee is your champion.', 'CRM'],
+  ['Call with Dana today at 10 AM.', 'calendar']
+];
+
+const DAYS = [
+  { key:'Mon', date:'Mon Feb 22', agent:'recap', time:'10:42 AM',
+    noticed:'Dana asked for 10% off and said finance now signs off.',
+    source:'Call', srcLabel:'Call, Mon',
+    draft:'Follow-up email to Dana confirming next steps and asking to meet finance.',
+    approvers:['Maya'], comment:{ who:'Sam', text:'I’ll prep the security answers.' },
+    fact:'Finance signs off on renewal.',
+    things:[['Dana asked for 10% off. Finance now signs off.','call'],['Maya’s follow-up to Dana is drafted.','email'],['Renewal is March 15, $400K.','CRM']] },
+  { key:'Tue', date:'Tue Feb 23', agent:'map', time:'9:15 AM', roadmap:true,
+    noticed:'Northwind has a new CFO, Alex Kim. He’s on none of our threads.',
+    source:'LinkedIn', srcLabel:'LinkedIn',
+    draft:'Short intro note from Jordan to Alex.',
+    approvers:['Jordan'],
+    fact:'New CFO Alex Kim, not yet engaged.',
+    things:[['New CFO Alex Kim isn’t on any of our threads.','LinkedIn'],['Finance signs off on this renewal.','call'],['Sam is prepping the security answers.','comment']] },
+  { key:'Wed', date:'Wed Feb 24', agent:'health', time:'11:03 AM', roadmap:true,
+    noticed:'Northwind’s ops lead emailed support twice about reporting this month.',
+    source:'Email', srcLabel:'Email',
+    draft:'Check-in from Priya offering a 20-minute reporting session.',
+    approvers:['Priya'],
+    fact:'Open frustration with reporting.',
+    things:[['Northwind’s ops lead emailed support twice.','email'],['Jordan’s intro to Alex went out.','email'],['Alex hasn’t engaged yet.','LinkedIn']] },
+  { key:'Thu', date:'Thu Feb 25', agent:'coach', time:'2:20 PM', roadmap:true,
+    noticed:'Only Dana has engaged in 30 days. Single-threaded deals like this are the ones that slip.',
+    source:'CRM', srcLabel:'CRM and email history',
+    draft:'Meeting plan with Dana, Alex and Northwind’s ops lead.',
+    approvers:['Maya','Sam'],
+    fact:'Plan: multi-thread before pricing.',
+    things:[['Only Dana has engaged in 30 days.','CRM'],['Priya offered a reporting session.','email'],['Pricing talk is next. Bring in Alex first.','CRM']] },
+  { key:'Fri', date:'Fri Feb 26', agent:'cos', time:'4:05 PM', handoff:true,
+    noticed:'Leo is the new AE on Northwind. He starts Monday.',
+    source:'CRM', srcLabel:'CRM',
+    draft:'Briefing for Leo: 5 things to know about Northwind before Monday.',
+    approvers:['Jordan'], roadmap:true,
+    things:[['Leo is the new AE on Northwind.','CRM'],['Renewal is March 15, $400K.','CRM'],['Meet Dana, Alex and ops before pricing.','CRM']] }
+];
+const DAY_TIMES = ['9:04 AM','9:00 AM','9:02 AM','9:01 AM','9:00 AM'];
+
+/* ---------- screen 1 ---------- */
+(function opening(){
+  const names = ['Maya','Sam','Priya','Jordan','Chris','Dev','Lena','Omar','Kai','Rosa','Ben','Ivy','Theo','Nina'];
+  const spots = [[4,6],[52,2],[28,20],[66,22],[6,36],[44,40],[74,46],[20,56],[56,62],[2,76],[36,80],[70,84],[14,92],[50,96]];
+  const sc = $('#scatter');
+  names.forEach((n,i) => { const b = el('span','bub', svg('lock') + n); b.style.left = spots[i][0] + '%'; b.style.top = `calc(${spots[i][1]}% - ${spots[i][1]*0.34}px)`; sc.append(b); });
+  ['Maya','Sam','Priya','Jordan'].forEach(n => { const a = el('div','av', n[0] + '<span class="live"></span>'); a.title = n; $('#s1team').append(a); });
+  AGENTS.forEach(a => { const i = el('div','aicon', svg(a.id)); i.title = a.name; $('#s1agents').append(i); });
+})();
+
+/* ---------- screen 2 static parts ---------- */
+const team = $('#team');
+function avatar(n){ const a = el('div','av', n[0] + '<span class="live"></span>'); a.dataset.who = n; a.title = `${n} (${PEOPLE[n]})`; return a; }
+document.querySelectorAll('[data-icon]').forEach(e => e.innerHTML = svg(e.dataset.icon));
+
+const bench = $('#bench'), tip = $('#tip');
+AGENTS.forEach(a => {
+  const r = el('div','agent');
+  r.dataset.id = a.id; r.tabIndex = 0;
+  r.innerHTML = `<div class="aicon">${svg(a.id)}</div><div><div class="nm">${a.name}</div><div class="ow"><span data-owner>${a.owner}</span>${a.roadmap ? ' <span class="tag">Roadmap</span>' : ''}</div></div>`;
+  const show = () => {
+    tip.innerHTML = `<div class="tt">${a.name}</div><dl><dt>IN</dt><dd>${a.in}</dd><dt>WHY</dt><dd>${a.why}</dd><dt>OUT</dt><dd>${a.out}</dd></dl>`;
+    const b = r.getBoundingClientRect();
+    tip.style.left = (b.right + 10) + 'px';
+    tip.style.top = Math.min(b.top, innerHeight - 190) + 'px';
+    tip.classList.add('on');
+  };
+  const hide = () => tip.classList.remove('on');
+  r.addEventListener('mouseenter', show); r.addEventListener('mouseleave', hide);
+  r.addEventListener('focus', show); r.addEventListener('blur', hide);
+  bench.append(r);
+});
+
+const daysEl = $('#days');
+DAYS.forEach((d,i) => { const b = el('button', '', d.key); b.dataset.i = i; b.addEventListener('click', () => { goDay(i, playing); }); daysEl.append(b); });
+
+/* ---------- state ---------- */
+let current = -1;        // day on screen
+let step = 0;            // next step to run inside the current day
+let playing = false;
+let timer = null;
+let outcome = {};        // day index -> 'approved' | 'skipped'
+let facts = [];          // {text, src, date}
+let token = 0;           // cancels stale async work
+
+const feed = $('#feed'), factsEl = $('#facts'), logEl = $('#log');
+
+function setThings(list, animate){
+  const t = $('#things');
+  const fill = () => { t.innerHTML = list.map((x,i) => `<div class="thing"><span class="n">${i+1}</span><p>${x[0]}<small>Source: From ${x[1]}</small></p></div>`).join(''); };
+  if (!animate || reduced) { fill(); return; }
+  t.classList.add('swap'); setTimeout(() => { fill(); t.classList.remove('swap'); }, 350);
+}
+function log(time, html){
+  const li = el('li', '', `<time>${time}</time>${html}`);
+  logEl.prepend(li);
+  while (logEl.children.length > 8) logEl.lastChild.remove();
+}
+function renderFacts(){
+  factsEl.innerHTML = '';
+  facts.forEach(f => factsEl.append(factEl(f)));
+  $('#factsEmpty').style.display = facts.length ? 'none' : '';
+}
+function factEl(f){ return el('li','fact', `${svg('check')}<div><p>${f.text}</p><small>${f.src} · ${f.date}</small></div>`); }
+function setActiveAgent(id){ bench.querySelectorAll('.agent').forEach(a => a.classList.toggle('active', a.dataset.id === id)); }
+function setDayButtons(){ daysEl.querySelectorAll('button').forEach((b,i) => b.classList.toggle('on', i === current)); }
+function setPlayButtons(){
+  $('#play').disabled = playing;
+  $('#pause').disabled = !playing;
+  }
+
+function resetRoom(){
+  token++;
+  hideClose();
+  clearTimeout(timer);
+  feed.innerHTML = '<p class="empty" id="feedEmpty">Press Play the week, or pick a day.</p>';
+  logEl.innerHTML = '';
+  facts = [];
+  renderFacts();
+  team.innerHTML = '';
+  ['Maya','Sam','Priya','Jordan'].forEach(n => team.append(avatar(n)));
+  bench.querySelector('[data-id="recap"] [data-owner]').textContent = 'Maya';
+  bench.querySelector('[data-id="coach"] [data-owner]').textContent = 'Sam and Maya';
+  setThings(START_THINGS, false);
+  setActiveAgent(null);
+  $('#banner').classList.remove('on');
+  current = -1; step = 0;
+}
+
+/* ---------- cards ---------- */
+function cardFor(i){
+  const d = DAYS[i], a = agentById(d.agent);
+  const c = el('article','card');
+  c.dataset.i = i;
+  let draft = `<div class="lbl">Drafted next step</div><p>${d.draft}</p>`;
+  if (d.handoff) {
+    const items = facts.map(f => [f.text, `${f.src}, ${f.date}`]).concat([['Renewal March 15, $400K.','CRM']]);
+    draft += `<ol class="brief">${items.map((x,k) => `<li><span class="n">${k+1}</span><span>${x[0]}<small>Source: ${x[1]}</small></span></li>`).join('')}</ol>`;
+  }
+  c.innerHTML = `
+    <div class="ch"><div class="aicon">${svg(a.id)}</div><b>${a.name}</b>${d.roadmap ? '<span class="tag">Roadmap</span>' : ''}<time>${d.key} ${d.time}</time></div>
+    <p class="noticed">${d.noticed}</p>
+    <span class="chip">${svg(d.source)}${d.srcLabel}</span>
+    <div class="draft">${draft}</div>
+    <div class="cf">
+      <button class="btn btn-primary" data-act="approve">${svg('check')}Approve</button>
+      <button class="btn btn-ghost" data-act="skip">Skip</button>
+      <span class="acted" data-acted>Waiting on ${d.approvers.join(' and ')}</span>
+    </div>`;
+  c.querySelector('[data-act="approve"]').addEventListener('click', () => userAct(i, 'approved'));
+  c.querySelector('[data-act="skip"]').addEventListener('click', () => userAct(i, 'skipped'));
+  return c;
+}
+function cardEl(i){ return feed.querySelector(`.card[data-i="${i}"]`); }
+function addCard(i, animate){
+  const e = $('#feedEmpty'); if (e) e.remove();
+  const c = cardFor(i);
+  if (animate && !reduced) c.classList.add('in');
+  feed.prepend(c);
+  feed.parentElement.scrollTop = 0;
+  return c;
+}
+function markApproved(i, who){
+  const c = cardEl(i); if (!c) return;
+  c.querySelectorAll('[data-act]').forEach(b => b.remove());
+  const acted = c.querySelectorAll('[data-acted]');
+  const last = acted[acted.length - 1];
+  if (last && !last.classList.contains('done')) { last.classList.add('done'); last.innerHTML = `${svg('check')}Approved by ${who}`; }
+  else c.querySelector('.cf').append(el('span','acted done', `${svg('check')}Approved by ${who}`));
+}
+function markSkipped(i, who){
+  const c = cardEl(i); if (!c) return;
+  c.classList.add('skipped');
+  c.querySelectorAll('[data-act]').forEach(b => b.remove());
+  c.querySelector('[data-acted]').innerHTML = `Skipped by ${who}`;
+}
+function addComment(i){
+  const d = DAYS[i], c = cardEl(i); if (!c || !d.comment) return;
+  c.append(el('p','comment', `<b>${d.comment.who} commented:</b> “${d.comment.text}”`));
+}
+
+/* fact flies from the card into the memory column */
+function addFact(i, animate, done){
+  const d = DAYS[i];
+  const f = { text:d.fact, src:d.source, date:d.date };
+  facts.push(f);
+  $('#factsEmpty').style.display = 'none';
+  const li = factEl(f);
+  factsEl.append(li);
+  const card = cardEl(i);
+  if (!animate || reduced || !card || innerWidth <= 960) { done && done(); return; }
+  li.classList.add('hold');
+  li.scrollIntoView({ block:'nearest' });
+  const from = card.querySelector('.draft').getBoundingClientRect();
+  const to = li.getBoundingClientRect();
+  const fly = el('div','fly', d.fact);
+  fly.style.left = from.left + 'px'; fly.style.top = from.top + 'px';
+  document.body.append(fly);
+  const anim = fly.animate([
+    { transform:'translate(0,0)', opacity:.0 },
+    { transform:'translate(0,0)', opacity:1, offset:.15 },
+    { transform:`translate(${to.left - from.left}px, ${to.top - from.top}px)`, opacity:1 }
+  ], { duration:1100, easing:'cubic-bezier(.22,1,.36,1)' });
+  anim.onfinish = () => { fly.remove(); li.classList.remove('hold'); done && done(); };
+}
+
+/* ---------- the story: each day is a list of steps ---------- */
+function stepsFor(d){
+  const i = DAYS.indexOf(d);
+  if (d.handoff) return [
+    [0,    () => { $('#banner').classList.add('on'); log(d.key + ' ' + DAY_TIMES[i], '<b>Maya</b> moved to a new territory'); }],
+    [1800, () => { const m = team.querySelector('[data-who="Maya"]'); m && m.classList.add('gone'); }],
+    [1300, () => { const l = avatar('Leo'); if (!reduced) l.classList.add('enter'); team.append(l);
+                   bench.querySelector('[data-id="recap"] [data-owner]').textContent = 'Leo';
+                   bench.querySelector('[data-id="coach"] [data-owner]').textContent = 'Sam and Leo';
+                   log(d.key + ' ' + DAY_TIMES[i], '<b>Leo</b> joined the room as AE'); }],
+    [1300, () => { $('#banner').classList.remove('on'); setThings(d.things, true); }],
+    [1300, () => { setActiveAgent(d.agent); addCard(i, true); log(d.key + ' ' + d.time, `<b>Chief of Staff</b> drafted a briefing for Leo`); }],
+    [3600, () => approve(i, 0)],
+    [2200, () => showClose()]
+  ];
+  const s = [
+    [0,    () => { setThings(d.things, true); }],
+    [1200, () => { setActiveAgent(d.agent); addCard(i, true); log(d.key + ' ' + d.time, `<b>${agentById(d.agent).name}</b> drafted a next step`); }],
+    [2400, () => approve(i, 0)]
+  ];
+  if (d.approvers.length > 1) s.push([1200, () => approve(i, 1)]);
+  if (d.comment) s.push([1200, () => { addComment(i); log(d.key + ' ' + d.time, `<b>${d.comment.who}</b> commented`); }]);
+  s.push([1200, () => fact(i, true)]);
+  s.push([1800, () => {}]);   // let the fact land before the next day
+  return s;
+}
+function approve(i, k){
+  const d = DAYS[i], who = d.approvers[k];
+  const c = cardEl(i);
+  const b = c && c.querySelector('[data-act="approve"]');
+  const finish = () => {
+    if (k === d.approvers.length - 1) outcome[i] = 'approved';
+    markApproved(i, who);
+    log(d.key + ' ' + d.time, `<b>${who}</b> approved ${agentById(d.agent).name}’s draft`);
+  };
+  if (b && !reduced) { b.classList.add('press'); setTimeout(finish, 260); } else finish();
+}
+function fact(i, animate){ if (DAYS[i].fact && outcome[i] === 'approved') addFact(i, animate); }
+
+/* finish day i with no animation (used when jumping) */
+function completeDay(i){
+  const d = DAYS[i];
+  current = i;
+  if (d.handoff) {
+    const m = team.querySelector('[data-who="Maya"]'); m && m.classList.add('gone');
+    team.append(avatar('Leo'));
+    bench.querySelector('[data-id="recap"] [data-owner]').textContent = 'Leo';
+    bench.querySelector('[data-id="coach"] [data-owner]').textContent = 'Sam and Leo';
+    log(d.key + ' ' + DAY_TIMES[i], '<b>Maya</b> moved to a new territory');
+    log(d.key + ' ' + DAY_TIMES[i], '<b>Leo</b> joined the room as AE');
+  }
+  addCard(i, false);
+  const o = outcome[i] || 'approved';
+  outcome[i] = o;
+  if (o === 'skipped') { markSkipped(i, d.approvers[0]); log(d.key + ' ' + d.time, `<b>${d.approvers[0]}</b> skipped ${agentById(d.agent).name}’s draft`); }
+  else {
+    d.approvers.forEach(w => { markApproved(i, w); log(d.key + ' ' + d.time, `<b>${w}</b> approved ${agentById(d.agent).name}’s draft`); });
+    if (d.comment) addComment(i);
+    if (d.fact) addFact(i, false);
+  }
+}
+
+function runSteps(){
+  clearTimeout(timer);
+  const d = DAYS[current];
+  const steps = stepsFor(d);
+  if (step >= steps.length) {
+    if (playing && current < DAYS.length - 1) { startDay(current + 1); runSteps(); }
+    else { playing = false; setPlayButtons(); }
+    return;
+  }
+  const [delay, fn] = steps[step];
+  const my = token;
+  timer = setTimeout(() => {
+    if (my !== token) return;
+    // a paused story waits at a card that still needs a decision
+    step++; fn();
+    if (playing) runSteps(); else setPlayButtons();
+  }, reduced ? Math.min(delay, 200) : delay);
+}
+/* steps before the approval run on their own; the story stops at a pending card when paused */
+function startDay(i){
+  current = i; step = 0;
+  setDayButtons();
+}
+
+/* jump to day i: earlier days are finished, day i plays from its start */
+function goDay(i, keepPlaying){
+  resetRoom();
+  for (let k = 0; k < i; k++) completeDay(k);
+  delete outcome[i];
+  for (let k = i + 1; k < DAYS.length; k++) delete outcome[k];
+  startDay(i);
+  playing = true;           // run the day’s opening steps
+  setPlayButtons();
+  runUntilDecision(keepPlaying);
+}
+/* when not playing, run a day only up to its pending card */
+function runUntilDecision(keepPlaying){
+  if (keepPlaying) { playing = true; setPlayButtons(); runSteps(); return; }
+  playing = false; setPlayButtons();
+  const steps = stepsFor(DAYS[current]);
+  const stopAt = steps.findIndex(s => /approve\(/.test(s[1].toString()));
+  const my = token;
+  (function next(){
+    if (my !== token || step >= stopAt || playing) return;
+    const [delay, fn] = steps[step];
+    timer = setTimeout(() => { if (my !== token || playing) return; step++; fn(); next(); }, reduced ? 0 : Math.min(delay, 900));
+  })();
+}
+
+/* Yosh clicks Approve or Skip on a card */
+function userAct(i, what){
+  if (i !== current) return;
+  token++; clearTimeout(timer);
+  const d = DAYS[i];
+  const steps = stepsFor(d);
+  const isApprove = s => /approve\(/.test(s[1].toString());
+  if (what === 'skipped') {
+    outcome[i] = 'skipped';
+    markSkipped(i, d.approvers[0]);
+    log(d.key + ' ' + d.time, `<b>${d.approvers[0]}</b> skipped ${agentById(d.agent).name}’s draft`);
+    step = steps.length - 1;            // nothing to learn from a skipped draft
+  } else {
+    d.approvers.forEach(w => markApproved(i, w));
+    outcome[i] = 'approved';
+    log(d.key + ' ' + d.time, `<b>${d.approvers.join(' and ')}</b> approved ${agentById(d.agent).name}’s draft`);
+    // move past the approval steps
+    let k = step; while (k < steps.length && (isApprove(steps[k]) || k < steps.findIndex(isApprove))) k++;
+    step = k;
+  }
+  if (playing) runSteps();
+  else {
+    // finish the rest of this day (comment, fact) even when paused
+    const my = token;
+    (function next(){
+      if (my !== token || step >= steps.length) { setPlayButtons(); return; }
+      const [delay, fn] = steps[step];
+      timer = setTimeout(() => { if (my !== token) return; step++; fn(); next(); }, reduced ? 0 : Math.min(delay, 700));
+    })();
+  }
+}
+
+function showClose(){
+  const s3 = $('#s3');
+  s3.classList.add('on'); s3.classList.remove('full', 'show');
+  requestAnimationFrame(() => requestAnimationFrame(() => s3.classList.add('show')));
+  const my = token;
+  setTimeout(() => { if (my === token) s3.classList.add('full'); }, reduced ? 0 : 2400);
+  playing = false; setPlayButtons();
+}
+function hideClose(){ const s3 = $('#s3'); s3.classList.remove('on','show','full'); }
+
+/* ---------- controls ---------- */
+$('#enter').addEventListener('click', () => { $('#s1').classList.remove('on'); $('#s2').classList.add('on'); });
+$('#play').addEventListener('click', () => {
+  if (current < 0 || (current === DAYS.length - 1 && step >= stepsFor(DAYS[current]).length)) { outcome = {}; goDay(0, true); return; }
+  token++; playing = true; setPlayButtons(); runSteps();
+});
+$('#pause').addEventListener('click', () => { token++; clearTimeout(timer); playing = false; setPlayButtons(); });
+$('#next').addEventListener('click', () => {
+  if (current < 0) { goDay(0, playing); return; }
+  if (current >= DAYS.length - 1) { token++; clearTimeout(timer); finishFriday(); return; }
+  goDay(current + 1, playing);
+});
+function finishFriday(){
+  const keep = Object.assign({}, outcome);
+  resetRoom(); outcome = keep;
+  for (let k = 0; k < DAYS.length; k++) completeDay(k);
+  current = DAYS.length - 1; step = stepsFor(DAYS[current]).length;
+  setThings(DAYS[current].things, false); setActiveAgent('cos'); setDayButtons();
+  playing = false; setPlayButtons();
+  showClose();
+}
+$('#aeleaves').addEventListener('click', () => goDay(DAYS.length - 1, true));
+$('#back').addEventListener('click', hideClose);
+$('#replay').addEventListener('click', () => { hideClose(); outcome = {}; goDay(0, true); });
+addEventListener('keydown', e => {
+  if (e.target.closest('button')) return;
+  if (e.key === ' ' && $('#s2').classList.contains('on')) { e.preventDefault(); (playing ? $('#pause') : $('#play')).click(); }
+  if (e.key === 'ArrowRight' && $('#s2').classList.contains('on')) $('#next').click();
+});
+
+resetRoom(); setDayButtons(); setPlayButtons();
+
+/* deep link for rehearsal: #room, #room-thu */
+const h = location.hash.slice(1);
+if (h.startsWith('room')) {
+  $('#s1').classList.remove('on'); $('#s2').classList.add('on');
+  const d = DAYS.findIndex(x => 'room-' + x.key.toLowerCase() === h);
+  if (d >= 0) goDay(d, false);
+}
+})();
+</script>
+</body>
+</html>
